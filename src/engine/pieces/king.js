@@ -42,59 +42,34 @@ export function moves(piece, board, coordinates, noCastlingCheck=false){
 
     // Check for castling
     if(!noCastlingCheck){
-        let kingMoved = false;
-        let rookQueenSideMoved = false;
-        let rookKingSideMoved = false;
         let inCheck = isInCheck(board, null);
 
-        let i;
-        for(i in board.moves){
-            if(i % 2 == board.turn){
-                if(board.moves[i][0] == 'K' || board.moves[i][0] == 'O'){
-                    kingMoved = true;
-                }else if(board.moves[i][0] == 'R'){
-                    if(board.moves[i][1] == 'A') rookQueenSideMoved = true;
-                    if(board.moves[i][1] == 'H') rookQueenSideMoved = true;
+        if(board.flags['castling'][board.turn][1] && !inCheck){
+            let valid = true;
+            for(let i = 0 ; i < 2; i++){
+                if(valid){
+                    let check = checkIfPositionIsDecked(board, [coordinates[0] + (i + 1), coordinates[1]])
+                    if(check[0] || check[1]) valid = false
                 }
             }
-            if(board.moves[i].search('x') != -1){
-                if(Number(board.moves[i][5]) == (i % 2) * 8){
-                    if(board.moves[i][4] == 'A') rookQueenSideMoved = true;
-                    if(board.moves[i][4] == 'H') rookQueenSideMoved = true;
-                }
+            if(valid){
+                possibleMoves.push('O-O')
             }
-
-            i += 1
         }
 
-        if(!kingMoved && !inCheck){
-            if(!rookQueenSideMoved){
-                let valid = true;
-                for(let i = 0 ; i < 2; i++){
-                    if(valid){
-                        let check = checkIfPositionIsDecked(board, [coordinates[0] - (i + 1), coordinates[1]])
-                        if(check[0] || check[1]) valid = false
-                    }
-                }
-                
+        if(board.flags['castling'][board.turn][0] && !inCheck){
+            let valid = true;
+            for(let i = 0 ; i < 2; i++){
                 if(valid){
-                    let isTaken = checkIfPositionIsDecked(board, [coordinates[0] - 3, coordinates[1]])[0]
-                    if(!isTaken){
-                        possibleMoves.push('O-O-O')
-                    }
+                    let check = checkIfPositionIsDecked(board, [coordinates[0] - (i + 1), coordinates[1]])
+                    if(check[0] || check[1]) valid = false
                 }
             }
-
-            if(!rookKingSideMoved){
-                let valid = true;
-                for(let i = 0 ; i < 2; i++){
-                    if(valid){
-                        let check = checkIfPositionIsDecked(board, [coordinates[0] + (i + 1), coordinates[1]])
-                        if(check[0] || check[1]) valid = false
-                    }
-                }
-                if(valid){
-                    possibleMoves.push('O-O')
+                
+            if(valid){
+                let isTaken = checkIfPositionIsDecked(board, [coordinates[0] - 3, coordinates[1]])[0]
+                if(!isTaken){
+                    possibleMoves.push('O-O-O')
                 }
             }
         }

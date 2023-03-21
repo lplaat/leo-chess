@@ -61,6 +61,7 @@ export function doLeoMove(board, leoMove, move){
     if(tempBoard.turn == 0){tempBoard.turn = 1
     }else{tempBoard.turn = 0}
 
+
     let i;
     for(i in leoMove['kills']){
         let kill = leoMove['kills'][i]

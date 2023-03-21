@@ -4,18 +4,7 @@ import * as moveHandler from "./moveHandler.js";
 
 export class Board {
     constructor() {
-        this.moves = [];
-        this.turn = 0;
-        this.positions = [
-            ['b4', 'b3', 'b2', 'b5', 'b6', 'b2', 'b3', 'b4'],
-            ['b1', 'b1', 'b1', 'b1', 'b1', 'b1', 'b1', 'b1'],
-            ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-            ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-            ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-            ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-            ['w1', 'w1', 'w1', 'w1', 'w1', 'w1', 'w1', 'w1'],
-            ['w4', 'w3', 'w2', 'w5', 'w6', 'w2', 'w3', 'w4']
-        ];
+        this.loadFEN('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')
     }
 
     validMoves() {
@@ -34,13 +23,91 @@ export class Board {
         return moves;
     }
 
+    getFenPiece(fenID){
+        const pieceTypes = ['p', 'b', 'n', 'r', 'q', 'k']
+        let i;
+        for(i in pieceTypes){
+            if(pieceTypes[i] == fenID.toLowerCase()){
+                if(fenID == fenID.toUpperCase()){
+                    return 'w' + (Number(i) + 1)
+                }else{
+                    return 'b' + (Number(i) + 1)
+                }
+            }
+        }
+    }
+
+    loadFEN(fen){
+        this.flags = {
+            'enPassantTargetSquare': fen.split(' ')[3],
+            'IsOffSet': 0,
+            'castling': [
+                [
+                    fen.split(' ')[2].search('K') != -1,
+                    fen.split(' ')[2].search('Q') != -1,
+                ],
+                [
+                    fen.split(' ')[2].search('k') != -1,
+                    fen.split(' ')[2].search('Q') != -1,
+                ]
+            ]
+        }
+
+        this.turn = 0
+        if(fen.split(' ')[1] == 'b'){
+            this.turn = 1;
+            this.flags['IsOffSet'] = 1;
+        }
+
+        let fenBoard = fen.split(' ')[0].split('/')
+        this.positions = []
+        for(let y = 0; y < 8;){
+            this.positions.push([])
+            for(let x = 0; x < 8;){
+                if(fenBoard[y][x] == undefined){
+                    break
+                }
+                if(isNaN(fenBoard[y][x])){
+                    let piece = this.getFenPiece(fenBoard[y][x])
+                    this.positions[y].push(piece)
+                }else{
+                    for(let i = 0; i < Number(fenBoard[y][x]); i++){
+                        this.positions[y].push('  ')
+                    }
+                }
+                x++
+            }
+            y++
+        }
+
+        this.moves = [];
+    }
+
     move(move){
         let leoMove = notation.reverseComplexNotation(this, move)[0]
         let tempBoard = moveHandler.doLeoMove(this, leoMove, move)
 
+        // Disable casteling if king or rook moves
+        if(move[0] == 'K' || move[0] == 'O'){
+            tempBoard.flags['castling'][this.turn] = [false, false] 
+        }else if(move[0] == 'R'){
+            if(move[1] == 'a') tempBoard.flags['castling'][this.turn][0] = false
+            if(move[1] == 'h') tempBoard.flags['castling'][this.turn][0] = false
+        }
+
+        let yLevel = this.turn * 7;
+        if(move.search('x') != -1){
+            if(Number(move[5]) == 8 - yLevel){
+                if(move[4] == 'a') tempBoard.flags['castling'][this.turn][0] = false
+                if(move[4] == 'h') tempBoard.flags['castling'][this.turn][0] = false
+            }
+        }
+
+        // Copy temp board to main board
         this.turn = tempBoard.turn;
         this.moves = tempBoard.moves;
         this.positions = tempBoard.positions;
+        this.flags = tempBoard.flags;
     }
 
     drawInstructionFromMoves(moves){

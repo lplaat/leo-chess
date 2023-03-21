@@ -6,7 +6,7 @@
 
     const rows = 8;
     const columns = 8;
-    let rate = 1.5;
+    let rate = 1.2;
     let size = 0;
     let upscale = 1;
 
@@ -14,8 +14,8 @@
     let showMoves = [];
 
     onMount(() => {
-        size = (Math.floor((window.innerHeight / rate) / 8) + Math.floor((window.innerWidth / rate) / 8)) / 2;
-        upscale = ((Math.floor(window.innerHeight / rate) + Math.floor(window.innerWidth / rate)) / 15) / 48
+        size = 75;
+        upscale = 1.5;
     })
 
     let promotionPossible = false;
