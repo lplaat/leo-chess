@@ -1,5 +1,10 @@
 import * as data from "./pieces/data.js";
 
+export function flip(a){
+    if(a < 0) return a - a - a
+    return a
+}
+
 export function validCoordinates(coordinates){
     return !(coordinates[0] < 0 || coordinates[1] < 0 || coordinates[0] > 7 || coordinates[1] > 7);
 }

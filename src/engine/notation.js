@@ -7,6 +7,10 @@ export function flipY(y){
     return (8 - y)
 }
 
+export function generatePartNotation(coordinates){
+    return files[coordinates[0]] + flipY(coordinates[1])
+}
+
 export function generate(leoMove, piece){
     let pastCoordinate = leoMove['from'][0];
     let newCoordinate = leoMove['to'][0];

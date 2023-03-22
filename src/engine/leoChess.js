@@ -87,19 +87,34 @@ export class Board {
         let leoMove = notation.reverseComplexNotation(this, move)[0]
         let tempBoard = moveHandler.doLeoMove(this, leoMove, move)
 
-        // Disable casteling if king or rook moves
+        // Disable castling if king or rook moves or dies
         if(move[0] == 'K' || move[0] == 'O'){
             tempBoard.flags['castling'][this.turn] = [false, false] 
         }else if(move[0] == 'R'){
             if(move[1] == 'a') tempBoard.flags['castling'][this.turn][0] = false
-            if(move[1] == 'h') tempBoard.flags['castling'][this.turn][0] = false
+            if(move[1] == 'h') tempBoard.flags['castling'][this.turn][1] = false
         }
 
         let yLevel = this.turn * 7;
         if(move.search('x') != -1){
-            if(Number(move[5]) == 8 - yLevel){
-                if(move[4] == 'a') tempBoard.flags['castling'][this.turn][0] = false
-                if(move[4] == 'h') tempBoard.flags['castling'][this.turn][0] = false
+            if(move[5] == 8 - yLevel){
+                if(move[4] == 'a') tempBoard.flags['castling'][tempBoard.turn][0] = false
+                if(move[4] == 'h') tempBoard.flags['castling'][tempBoard.turn][1] = false
+            }
+        }
+
+        // Remember Possible En Passant Targets
+        tempBoard.flags['enPassantTargetSquare'] = '-'
+        if(moveHandler.flip(leoMove['from'][0][1] - leoMove['to'][0][1]) == 2){
+            let pieceData = new Piece(this.positions[leoMove['from'][0][1]][leoMove['from'][0][0]])
+            if(pieceData.id == 1){
+                let offset;
+                if(tempBoard.turn == 1) offset = -1
+                if(tempBoard.turn == 0) offset = 1
+
+                let targetY = leoMove['from'][0][1] + offset;
+
+                tempBoard.flags['enPassantTargetSquare'] = move[0] + (8 - targetY)
             }
         }
 
@@ -108,6 +123,8 @@ export class Board {
         this.moves = tempBoard.moves;
         this.positions = tempBoard.positions;
         this.flags = tempBoard.flags;
+
+        console.log(this.flags)
     }
 
     drawInstructionFromMoves(moves){
