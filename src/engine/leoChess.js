@@ -1,10 +1,16 @@
 import { Piece } from './pieceHandler.js';
 import * as notation from "./notation.js";
 import * as moveHandler from "./moveHandler.js";
+import * as fen from "./fen.js";
 
 export class Board {
-    constructor() {
-        this.loadFEN('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')
+    constructor(fenString = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1') {
+        let fenData = fen.loadFEN(fenString);
+
+        this.moves = [];
+        this.positions = fenData['positions'];
+        this.turn = fenData['turn'];
+        this.flags = fenData['flags'];
     }
 
     validMoves() {
@@ -21,66 +27,6 @@ export class Board {
         }
 
         return moves;
-    }
-
-    getFenPiece(fenID){
-        const pieceTypes = ['p', 'b', 'n', 'r', 'q', 'k']
-        let i;
-        for(i in pieceTypes){
-            if(pieceTypes[i] == fenID.toLowerCase()){
-                if(fenID == fenID.toUpperCase()){
-                    return 'w' + (Number(i) + 1)
-                }else{
-                    return 'b' + (Number(i) + 1)
-                }
-            }
-        }
-    }
-
-    loadFEN(fen){
-        this.flags = {
-            'enPassantTargetSquare': fen.split(' ')[3],
-            'IsOffSet': 0,
-            'castling': [
-                [
-                    fen.split(' ')[2].search('K') != -1,
-                    fen.split(' ')[2].search('Q') != -1,
-                ],
-                [
-                    fen.split(' ')[2].search('k') != -1,
-                    fen.split(' ')[2].search('Q') != -1,
-                ]
-            ]
-        }
-
-        this.turn = 0
-        if(fen.split(' ')[1] == 'b'){
-            this.turn = 1;
-            this.flags['IsOffSet'] = 1;
-        }
-
-        let fenBoard = fen.split(' ')[0].split('/')
-        this.positions = []
-        for(let y = 0; y < 8;){
-            this.positions.push([])
-            for(let x = 0; x < 8;){
-                if(fenBoard[y][x] == undefined){
-                    break
-                }
-                if(isNaN(fenBoard[y][x])){
-                    let piece = this.getFenPiece(fenBoard[y][x])
-                    this.positions[y].push(piece)
-                }else{
-                    for(let i = 0; i < Number(fenBoard[y][x]); i++){
-                        this.positions[y].push('  ')
-                    }
-                }
-                x++
-            }
-            y++
-        }
-
-        this.moves = [];
     }
 
     move(move){
@@ -101,7 +47,14 @@ export class Board {
                 if(move[4] == 'a') tempBoard.flags['castling'][tempBoard.turn][0] = false
                 if(move[4] == 'h') tempBoard.flags['castling'][tempBoard.turn][1] = false
             }
+            // Resets and incremented half move Clock
+            tempBoard.flags['HalfMoveClock'] = 0;
+        }else{
+            tempBoard.flags['HalfMoveClock']++;
         }
+
+        // Incremented full move counter
+        if(this.turn == 1) tempBoard.flags['totalMoves']++;
 
         // Remember Possible En Passant Targets
         tempBoard.flags['enPassantTargetSquare'] = '-'
@@ -123,8 +76,6 @@ export class Board {
         this.moves = tempBoard.moves;
         this.positions = tempBoard.positions;
         this.flags = tempBoard.flags;
-
-        console.log(this.flags)
     }
 
     drawInstructionFromMoves(moves){
