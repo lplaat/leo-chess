@@ -4,13 +4,24 @@ import * as moveHandler from "./moveHandler.js";
 import * as fen from "./fen.js";
 
 export class Board {
-    constructor(fenString = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1') {
+    constructor(fenString, playAs) {
+        if(fenString == undefined) fenString = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+        if(playAs == undefined) playAs = 'white';
+
         let fenData = fen.loadFEN(fenString);
 
         this.moves = [];
         this.positions = fenData['positions'];
         this.turn = fenData['turn'];
         this.flags = fenData['flags'];
+        this.flags['playAs'] = playAs;
+    }
+
+    rotateNumber(num){
+        if(this.flags['playAs'] == 'black'){
+            return 7 - num
+        }
+        return num
     }
 
     validMoves() {

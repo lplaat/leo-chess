@@ -26,17 +26,17 @@
 
     function showPromotionOptions(){
         document.querySelector('.promotion-options').style.display = 'block';
-        document.querySelector('.promotion-options').style.transform = 'translateX(' + size * promotionTile[0] + 'px)';
-        if(promotionTile[1] != 0){
+        document.querySelector('.promotion-options').style.transform = 'translateX(' + size * board.rotateNumber(promotionTile[0]) + 'px)';
+        if(board.rotateNumber(promotionTile[1]) != 0){
             document.querySelector('.promotion-options').style.transform += 'translateY(' + size * 3 + 'px)';
         }
 
-        if(board.turn == 0){
-            promotionLetter = 'w'
+        if(board.turn == 0) promotionLetter = 'w';
+        if(board.turn == 1) promotionLetter = 'b';
+            
+        if(board.rotateNumber(promotionTile[1]) == 0){
             promotionOptions = [['Q', 5], ['N', 3], ['R', 4], ['B', 2], ['exist', 0]]
-        }
-        if(board.turn == 1){
-            promotionLetter = 'b'
+        }else {
             promotionOptions = [['exist', 0], ['B', 2], ['R', 4], ['N', 3], ['Q', 5]]
         }
     }
@@ -116,7 +116,7 @@
     function findClass(x, y){
         let i;
         for(i in showMoves){
-            if(showMoves[i]['coordinates'][0] == x && showMoves[i]['coordinates'][1] == y){
+            if(showMoves[i]['coordinates'][0] == board.rotateNumber(x) && showMoves[i]['coordinates'][1] == board.rotateNumber(y)){
                 return 'hint'
             }
         }
@@ -177,8 +177,8 @@
         {#each Array(rows) as _, row}
             {#each Array(columns) as _, column}
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
-                    <div on:click={() => (clickedBoard(column, row))} style="width: {size}px; height: {size}px;" class="cell {((row+column) % 2 == 0) ? 'even' : 'odd'} {findClass(column, row)}">
-                        <Piece selector={board.positions[row][column]} upscale={upscale}/>
+                    <div on:click={() => (clickedBoard(board.rotateNumber(column), board.rotateNumber(row)))} style="width: {size}px; height: {size}px;" class="cell {((row+column) % 2 == 0) ? 'even' : 'odd'} {findClass(column, row)}">
+                        <Piece selector={board.positions[board.rotateNumber(row)][board.rotateNumber(column)]} upscale={upscale}/>
                     </div>
             {/each}
         {/each}
