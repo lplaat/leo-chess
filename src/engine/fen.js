@@ -18,6 +18,7 @@ export function loadFEN(fen) {
         'totalMoves': Number(fen.split(' ')[5]),
         'HalfMoveClock': Number(fen.split(' ')[4]),
         'IsOffSet': 0,
+        'won': 0,
         'castling': [
             [
                 fen.split(' ')[2].search('K') != -1,
@@ -25,7 +26,7 @@ export function loadFEN(fen) {
             ],
             [
                 fen.split(' ')[2].search('k') != -1,
-                fen.split(' ')[2].search('Q') != -1,
+                fen.split(' ')[2].search('q') != -1,
             ]
         ]
     }

@@ -1,4 +1,6 @@
 import { Piece } from './pieceHandler.js';
+import * as king from './pieces/king.js';
+
 import * as notation from "./notation.js";
 import * as moveHandler from "./moveHandler.js";
 import * as fen from "./fen.js";
@@ -24,7 +26,7 @@ export class Board {
         return num
     }
 
-    validMoves() {
+    validMoves(rawMoves=false) {
         let moves = [];
 
         for(let y = 0; y < 8; y++){
@@ -32,7 +34,11 @@ export class Board {
                 let pieceData = new Piece(this.positions[y][x])
                 if(pieceData.id != null){
                     let pieceMoves = pieceData.findMoves(this, [x, y]);
-                    moves.push({'tile': [x, y], 'moves': pieceMoves})
+                    if(rawMoves == false){
+                        moves.push({'tile': [x, y], 'moves': pieceMoves})
+                    }else{
+                        moves = moves.concat(pieceMoves)
+                    }
                 }
             }
         }
@@ -80,13 +86,23 @@ export class Board {
 
                 tempBoard.flags['enPassantTargetSquare'] = move[0] + (8 - targetY)
             }
-        }
+        }        
 
         // Copy temp board to main board
-        this.turn = tempBoard.turn;
         this.moves = tempBoard.moves;
         this.positions = tempBoard.positions;
         this.flags = tempBoard.flags;
+        this.turn = tempBoard.turn;
+
+        // Check if its checkmate or a draw
+        let validMoves = this.validMoves(true);
+        if(validMoves.length == 0){
+            if(king.isInCheck(this, null)){
+                this.flags['won'] = this.turn
+            }else{
+                this.flags['won'] = 2
+            }
+        }
     }
 
     drawInstructionFromMoves(moves){

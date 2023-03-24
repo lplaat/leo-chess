@@ -43,6 +43,7 @@ export class Piece {
             let i;
             for(i in moves){
                 let inCheck = king.isInCheck(board, moves[i])
+
                 if(!inCheck){
                     legalMoves.push(moves[i])
                 }
